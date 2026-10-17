@@ -28,10 +28,33 @@ export function HipzoneQuotationDocument({
     "HIPZONE AUTOMATION transforms homes and businesses into smarter, safer, and more intelligent spaces. With over 8 years of expertise in India and an expanding presence in Dubai, we deliver AI-integrated automation and security solutions powered by trusted global brands.\n\nOur intelligent systems go beyond standard automation. They learn your lifestyle, anticipate your needs, and optimize comfort, security, and energy efficiency automatically. We combine technical expertise with personalized service to ensure every project is reliable, future-ready, and supported by strong customer care.";
 
   // Calculate totals
-  const subtotal = quotation.subtotal || 0;
+  // Items total is tax-inclusive (entered billing prices)
+  const itemsTotal =
+    quotation.pages?.reduce((acc, pg) => {
+      return (
+        acc +
+        pg.tables.reduce((sum, t) => {
+          return (
+            sum +
+            t.items.reduce(
+              (itSum, it) => itSum + (it.total || it.qty * it.price),
+              0
+            )
+          );
+        }, 0)
+      );
+    }, 0) ||
+    quotation.grandTotal ||
+    quotation.subtotal ||
+    0;
+
   const taxRate = quotation.taxRate ?? 18;
-  const taxAmount = quotation.taxAmount || (subtotal * taxRate) / 100;
-  const grandTotal = quotation.grandTotal || subtotal + taxAmount;
+  // Taxable amount is amount without tax
+  const taxableAmount =
+    taxRate > 0 ? itemsTotal / (1 + taxRate / 100) : itemsTotal;
+  const taxAmount = itemsTotal - taxableAmount;
+  const grandTotal = itemsTotal;
+  const subtotal = taxableAmount;
 
   // Sales Contact
   const salesName = quotation.salesContact?.name || settings?.defaultSalesContact?.name || "Sales Team";
@@ -221,7 +244,10 @@ export function HipzoneQuotationDocument({
                     <td className="py-2.5 px-2 text-center text-slate-300 border-r border-[#0077b6]/30 font-mono">
                       {it.taxPercent ?? 5}%
                     </td>
-                    <td className="py-2.5 px-3 text-right font-bold text-emerald-400 font-mono">
+                    <td
+                      className="py-2.5 px-3 text-right font-bold text-white font-mono"
+                      style={{ color: "#ffffff" }}
+                    >
                       {formatCurrency(it.total || it.qty * it.price, currency)}
                     </td>
                   </tr>
@@ -232,7 +258,10 @@ export function HipzoneQuotationDocument({
                   <td colSpan={6} className="py-2.5 px-4 text-right font-bold text-white uppercase tracking-wider font-sans border-r border-[#0077b6]/40">
                     Sub Total:
                   </td>
-                  <td className="py-2.5 px-3 text-right font-black text-emerald-400 font-mono text-sm">
+                  <td
+                    className="py-2.5 px-3 text-right font-black text-white font-mono text-sm"
+                    style={{ color: "#ffffff" }}
+                  >
                     {formatCurrency(tableSubtotal, currency)}
                   </td>
                 </tr>

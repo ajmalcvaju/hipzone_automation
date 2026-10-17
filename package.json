@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "node scripts/patch-html2canvas.js"
+    "postinstall": "node scripts/patch-html2canvas.js",
+    "deploy": "next build && npx firebase-tools deploy --only hosting"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -15,7 +16,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^13.0.0",
-    "firebase-admin": "^14.5.0",
+    "firebase-admin": "^13.0.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.55.0",
@@ -35,6 +36,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "^0.25.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",

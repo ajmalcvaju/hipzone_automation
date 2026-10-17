@@ -125,20 +125,25 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
 
   // Recalculate quotation totals whenever pages or items change
   const recalculateTotals = (pages: QuotationPage[], taxRate: number) => {
-    let sub = 0;
+    let grand = 0;
     pages.forEach((pg) => {
       pg.tables.forEach((t) => {
         t.items.forEach((it) => {
-          sub += it.total || it.qty * it.price;
+          grand += it.total || it.qty * it.price;
         });
       });
     });
 
-    const tax = (sub * taxRate) / 100;
+    const rate = Number(taxRate) || 0;
+    // Entered amount is tax-inclusive:
+    // Taxable amount is amount without tax
+    const taxable = rate > 0 ? grand / (1 + rate / 100) : grand;
+    const tax = grand - taxable;
+
     return {
-      subtotal: sub,
+      subtotal: taxable,
       taxAmount: tax,
-      grandTotal: sub + tax,
+      grandTotal: grand,
     };
   };
 

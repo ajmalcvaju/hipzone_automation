@@ -66,7 +66,7 @@ export default function AllQuotationsPage() {
       const copy = await duplicateQuotation(id);
       if (copy) {
         toast.success(`Duplicated as ${copy.quotationNumber}`);
-        router.push(`/quotations/${copy.id}`);
+        router.push(`/quotations/edit?id=${copy.id}`);
       }
     } catch (err) {
       console.error(err);
@@ -187,7 +187,7 @@ export default function AllQuotationsPage() {
                 {filtered.map((quote) => (
                   <tr
                     key={quote.id}
-                    onClick={() => router.push(`/quotations/${quote.id}`)}
+                    onClick={() => router.push(`/quotations/edit?id=${quote.id}`)}
                     className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                   >
                     <td className="py-4 px-5 font-mono font-bold text-[#0077b6] group-hover:underline">
@@ -230,7 +230,7 @@ export default function AllQuotationsPage() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            router.push(`/quotations/${quote.id}`);
+                            router.push(`/quotations/edit?id=${quote.id}`);
                           }}
                           className="p-1.5 text-slate-500 hover:text-[#0077b6] hover:bg-slate-100 rounded transition-colors"
                           title="Edit Quotation"
@@ -249,7 +249,7 @@ export default function AllQuotationsPage() {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            router.push(`/quotations/${quote.id}?download=true`);
+                            router.push(`/quotations/edit?id=${quote.id}&download=true`);
                           }}
                           className="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-slate-100 rounded transition-colors"
                           title="Download PDF"

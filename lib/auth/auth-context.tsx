@@ -13,6 +13,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const SESSION_STORAGE_KEY = "hipzone_auth_session";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null);
@@ -20,54 +21,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    async function checkAuth() {
-      try {
-        const res = await fetch("/api/auth/me");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.authenticated && data.user) {
-            setUser(data.user);
-          } else {
-            setUser(null);
-          }
+    // Check client-side stored session
+    try {
+      const stored = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as UserSession;
+        if (parsed && parsed.username) {
+          setUser(parsed);
         } else {
           setUser(null);
         }
-      } catch {
+      } else {
         setUser(null);
-      } finally {
-        setLoading(false);
       }
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-
-    checkAuth();
   }, []);
 
   const login = async (username: string, password: string) => {
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+      const expectedUsername = "quotation@hipzoneautomation";
+      const expectedPassword = "admin.hipzonequotation";
 
-      const data = await res.json();
+      const normalizedInputUsername = String(username).trim().toLowerCase();
+      const normalizedInputPassword = String(password).trim();
 
-      if (!res.ok) {
-        return { success: false, error: data.error || "Login failed" };
+      if (
+        normalizedInputUsername === expectedUsername.toLowerCase() &&
+        normalizedInputPassword === expectedPassword
+      ) {
+        const sessionUser: UserSession = {
+          username: expectedUsername,
+          role: "admin",
+          displayName: "Hipzone Admin",
+        };
+
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionUser));
+        setUser(sessionUser);
+        toast.success("Welcome back, Hipzone Admin!");
+        return { success: true };
       }
 
-      setUser(data.user);
-      toast.success("Welcome back, Hipzone Admin!");
-      return { success: true };
+      return {
+        success: false,
+        error: "Invalid username or password. Please check your credentials.",
+      };
     } catch {
-      return { success: false, error: "Network error occurred during login" };
+      return { success: false, error: "An unexpected error occurred during login." };
     }
   };
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      localStorage.removeItem(SESSION_STORAGE_KEY);
     } catch (err) {
       console.error("Logout error", err);
     } finally {
