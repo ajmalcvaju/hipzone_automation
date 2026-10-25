@@ -78,3 +78,74 @@ export function numberToIndianWords(num: number): string {
   res = res.trim();
   return `Rupees ${res} Only (Rounded)`;
 }
+
+export interface QuotationTotals {
+  has7Col: boolean;
+  taxableAmount: number;
+  taxAmount: number;
+  grandTotal: number;
+  subtotal: number;
+}
+
+export function computeQuotationTotals(
+  pages: any[] = [],
+  taxRate: number = 18
+): QuotationTotals {
+  let taxable = 0;
+  let tax = 0;
+  let grand = 0;
+  let has7Col = false;
+
+  pages.forEach((page) => {
+    page.tables?.forEach((table: any) => {
+      if (table.type === "7-col") {
+        has7Col = true;
+        table.items?.forEach((it: any) => {
+          const qty = it.qty || 1;
+          const itTaxPct = it.taxPercent ?? taxRate ?? 18;
+
+          // For 7-col table, the Billing Price (it.total) is already tax-added.
+          // Taxable amount is the base amount WITHOUT tax:
+          let itemBase = 0;
+          if (typeof it.price === "number" && it.price > 0) {
+            itemBase = qty * it.price;
+          } else if (typeof it.total === "number" && it.total > 0) {
+            itemBase = it.total / (1 + itTaxPct / 100);
+          }
+
+          let itemTax = 0;
+          if (typeof it.taxAmount === "number" && it.taxAmount > 0) {
+            itemTax = it.taxAmount;
+          } else {
+            itemTax = (itemBase * itTaxPct) / 100;
+          }
+
+          const itemTotal =
+            typeof it.total === "number" && it.total > 0 ? it.total : itemBase + itemTax;
+
+          taxable += itemBase;
+          tax += itemTax;
+          grand += itemTotal;
+        });
+      } else {
+        // 2-col or 4-col table: Subtotal is taken directly as taxable amount
+        table.items?.forEach((it: any) => {
+          const itemBase = it.total || (it.qty ? it.qty * it.price : it.price) || 0;
+          const itemTax = (itemBase * taxRate) / 100;
+
+          taxable += itemBase;
+          tax += itemTax;
+          grand += itemBase + itemTax;
+        });
+      }
+    });
+  });
+
+  return {
+    has7Col,
+    taxableAmount: taxable,
+    taxAmount: tax,
+    grandTotal: grand,
+    subtotal: taxable,
+  };
+}

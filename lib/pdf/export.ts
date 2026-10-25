@@ -236,13 +236,8 @@ export async function downloadQuotationPDF(
             .text-slate-200 { color: #e2e8f0 !important; }
             .text-slate-300 { color: #cbd5e1 !important; }
             .text-slate-400 { color: #94a3b8 !important; }
-            .text-slate-500 { color: #64748b !important; }
             .text-white { color: #ffffff !important; }
-            .text-emerald-400 { color: #34d399 !important; }
-            .text-emerald-500 { color: #10b981 !important; }
-            .text-emerald-600 { color: #059669 !important; }
-            .text-green-400 { color: #4ade80 !important; }
-            .text-cyan-400 { color: #22d3ee !important; }
+            .text-emerald-400, .text-emerald-500, .text-emerald-600 { color: #34d399 !important; }
             .quotation-page {
               width: 210mm !important;
               min-height: 297mm !important;

@@ -17,7 +17,8 @@ import { saveQuotation, generateNextQuotationNumber } from "@/services/quotation
 import { compressImageTo25KB } from "@/services/storage";
 import { HipzoneQuotationDocument } from "@/components/quotation-document/HipzoneQuotationDocument";
 import { downloadQuotationPDF, printQuotationDocument } from "@/lib/pdf/export";
-import { generateId } from "@/lib/utils";
+import { generateId, computeQuotationTotals } from "@/lib/utils";
+import { ProductSearchSelect } from "./ProductSearchSelect";
 import { toast } from "sonner";
 import {
   FileText,
@@ -125,26 +126,7 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
 
   // Recalculate quotation totals whenever pages or items change
   const recalculateTotals = (pages: QuotationPage[], taxRate: number) => {
-    let grand = 0;
-    pages.forEach((pg) => {
-      pg.tables.forEach((t) => {
-        t.items.forEach((it) => {
-          grand += it.total || it.qty * it.price;
-        });
-      });
-    });
-
-    const rate = Number(taxRate) || 0;
-    // Entered amount is tax-inclusive:
-    // Taxable amount is amount without tax
-    const taxable = rate > 0 ? grand / (1 + rate / 100) : grand;
-    const tax = grand - taxable;
-
-    return {
-      subtotal: taxable,
-      taxAmount: tax,
-      grandTotal: grand,
-    };
+    return computeQuotationTotals(pages, taxRate);
   };
 
   // Keyboard shortcut Ctrl+S
@@ -283,7 +265,7 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
                 qty: 1,
                 price: 0,
                 total: 0,
-                taxPercent: quotation.taxRate || 5,
+                taxPercent: quotation.taxRate ?? 18,
                 taxAmount: 0,
               };
               return { ...t, items: [...t.items, newItem] };
@@ -389,7 +371,7 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
                     const taxPct =
                       field === "taxPercent"
                         ? Number(val) || 0
-                        : it.taxPercent ?? quotation.taxRate ?? 5;
+                        : it.taxPercent ?? quotation.taxRate ?? 18;
 
                     const itemSubtotal = qty * price;
                     const itemTax = (itemSubtotal * taxPct) / 100;
@@ -420,6 +402,37 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
 
   const handleSelectProduct = (pageId: string, tableId: string, itemId: string, prodId: string) => {
     if (!quotation) return;
+
+    if (!prodId) {
+      const updatedPages = quotation.pages.map((p) => {
+        if (p.id === pageId) {
+          return {
+            ...p,
+            tables: p.tables.map((t) => {
+              if (t.id === tableId) {
+                return {
+                  ...t,
+                  items: t.items.map((it) => {
+                    if (it.id === itemId) {
+                      return {
+                        ...it,
+                        productId: undefined,
+                      };
+                    }
+                    return it;
+                  }),
+                };
+              }
+              return t;
+            }),
+          };
+        }
+        return p;
+      });
+      setQuotation({ ...quotation, pages: updatedPages });
+      return;
+    }
+
     const selected = products.find((p) => p.id === prodId);
     if (!selected) return;
 
@@ -435,7 +448,7 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
                   if (it.id === itemId) {
                     const qty = it.qty || 1;
                     const price = selected.price || 0;
-                    const taxPct = it.taxPercent ?? quotation.taxRate ?? 5;
+                    const taxPct = it.taxPercent ?? quotation.taxRate ?? 18;
                     const itemSubtotal = qty * price;
                     const itemTax = (itemSubtotal * taxPct) / 100;
 
@@ -1036,21 +1049,14 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
                                     </div>
                                   </div>
 
-                                  {/* Select Product Dropdown */}
-                                  <select
-                                    value={item.productId || ""}
-                                    onChange={(e) =>
-                                      handleSelectProduct(pg.id, table.id, item.id, e.target.value)
+                                  {/* Searchable Product Dropdown */}
+                                  <ProductSearchSelect
+                                    products={products}
+                                    selectedProductId={item.productId}
+                                    onSelect={(prodId) =>
+                                      handleSelectProduct(pg.id, table.id, item.id, prodId)
                                     }
-                                    className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:border-[#0077b6] text-slate-800 bg-white"
-                                  >
-                                    <option value="">-- Select Product --</option>
-                                    {products.map((p) => (
-                                      <option key={p.id} value={p.id}>
-                                        {p.name} (₹{p.price})
-                                      </option>
-                                    ))}
-                                  </select>
+                                  />
 
                                   {item.imageUrl && (
                                     <div className="flex items-center gap-2.5 p-2 rounded-lg bg-blue-50/60 border border-blue-200/80">
