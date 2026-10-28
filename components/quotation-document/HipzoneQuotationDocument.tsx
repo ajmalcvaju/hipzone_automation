@@ -128,7 +128,16 @@ export function HipzoneQuotationDocument({
           className="h-6 w-auto object-contain block"
         />
       </div>
-      <span className="text-[#00b4d8] font-medium">www.hipzoneautomation.com</span>
+      <a
+        href="https://hipzoneautomation.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        data-pdf-link="https://hipzoneautomation.com"
+        className="text-[#00b4d8] font-medium hover:underline hover:text-cyan-300 transition-colors cursor-pointer"
+        title="Visit www.hipzoneautomation.com"
+      >
+        www.hipzoneautomation.com
+      </a>
     </div>
   );
 
@@ -359,6 +368,26 @@ export function HipzoneQuotationDocument({
           alt="Hipzone Automation Cover Page"
           className="w-full h-full object-cover block"
         />
+
+        {/* Page 1 Website Link */}
+        <a
+          href="https://hipzoneautomation.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-pdf-link="https://hipzoneautomation.com"
+          data-pdf-left="3.8"
+          data-pdf-top="93.2"
+          data-pdf-width="29.0"
+          data-pdf-height="2.8"
+          title="Visit www.hipzoneautomation.com"
+          className="absolute z-20 cursor-pointer block rounded hover:ring-1 hover:ring-cyan-400/50 transition-all"
+          style={{
+            top: "93.2%",
+            left: "3.8%",
+            width: "29.0%",
+            height: "2.8%",
+          }}
+        />
       </div>
 
       {/* ========================================================
@@ -370,6 +399,26 @@ export function HipzoneQuotationDocument({
           src="/hipzone-assets/hd_page_2.jpg"
           alt="About Hipzone Automation"
           className="w-full h-full object-cover block"
+        />
+
+        {/* Page 2 Website Link */}
+        <a
+          href="https://hipzoneautomation.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-pdf-link="https://hipzoneautomation.com"
+          data-pdf-left="68.0"
+          data-pdf-top="95.0"
+          data-pdf-width="28.0"
+          data-pdf-height="2.8"
+          title="Visit www.hipzoneautomation.com"
+          className="absolute z-20 cursor-pointer block rounded hover:ring-1 hover:ring-cyan-400/50 transition-all"
+          style={{
+            top: "95.0%",
+            left: "68.0%",
+            width: "28.0%",
+            height: "2.8%",
+          }}
         />
       </div>
 
