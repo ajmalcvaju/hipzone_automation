@@ -710,6 +710,26 @@ export function HipzoneQuotationDocument({
             height: "2.6%",
           }}
         />
+
+        {/* Page 8 QR Code clickable link overlay */}
+        <a
+          href="https://hipzoneautomation.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-pdf-link="https://hipzoneautomation.com"
+          data-pdf-left="42.8"
+          data-pdf-top="77.0"
+          data-pdf-width="14.5"
+          data-pdf-height="10.2"
+          title="Scan or click to visit hipzoneautomation.com"
+          className="absolute z-20 cursor-pointer block rounded hover:ring-2 hover:ring-cyan-400/50 transition-all"
+          style={{
+            top: "77.0%",
+            left: "42.8%",
+            width: "14.5%",
+            height: "10.2%",
+          }}
+        />
       </div>
 
       {/* ========================================================
