@@ -121,7 +121,12 @@ export function HipzoneQuotationDocument({
   const BrandedFooter = () => (
     <div className="relative z-10 w-full border-t border-slate-800/80 pt-3 pb-3 px-8 flex items-center justify-between text-[11px] text-slate-400 font-sans">
       <div className="flex items-center gap-2">
-        <span className="font-bold tracking-wider text-slate-300">HIPZONE</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hipzone-logo.png"
+          alt="Hipzone Automation"
+          className="h-6 w-auto object-contain block"
+        />
       </div>
       <span className="text-[#00b4d8] font-medium">www.hipzoneautomation.com</span>
     </div>
