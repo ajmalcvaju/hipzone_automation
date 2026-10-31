@@ -10,7 +10,15 @@ export async function getCompanySettings(): Promise<CompanySettings> {
     try {
       const snap = await getDoc(doc(db, "settings", "company"));
       if (snap.exists()) {
-        return snap.data() as CompanySettings;
+        const data = snap.data() as CompanySettings;
+        if (
+          !data.defaultTerms ||
+          data.defaultTerms.includes("Thank you for your interest in Hipzone Automation India") ||
+          data.defaultTerms.includes("Mobile Application: The Hipzone mobile app")
+        ) {
+          data.defaultTerms = DEFAULT_SETTINGS.defaultTerms;
+        }
+        return data;
       }
     } catch (err) {
       console.warn("Firestore fetch settings error:", err);
@@ -21,7 +29,15 @@ export async function getCompanySettings(): Promise<CompanySettings> {
     const stored = localStorage.getItem(SETTINGS_KEY);
     if (stored) {
       try {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+        const parsed = { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+        if (
+          !parsed.defaultTerms ||
+          parsed.defaultTerms.includes("Thank you for your interest in Hipzone Automation India") ||
+          parsed.defaultTerms.includes("Mobile Application: The Hipzone mobile app")
+        ) {
+          parsed.defaultTerms = DEFAULT_SETTINGS.defaultTerms;
+        }
+        return parsed;
       } catch {
         // use default
       }

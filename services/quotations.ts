@@ -1,6 +1,7 @@
 import { db, isFirebaseConfigured } from "@/lib/firebase/client";
 import { Quotation, QuotationStatus } from "@/types";
 import { generateId } from "@/lib/utils";
+import { DEFAULT_TERMS_AND_CONDITIONS } from "@/lib/constants";
 import { getCompanySettings } from "./settings";
 import {
   collection,
@@ -60,8 +61,7 @@ function getLocalQuotations(): Quotation[] {
         phone: "+91 7012566008",
         email: "support@hipzoneautomation.com",
       },
-      termsAndConditions:
-        "Thank you for your interest in Hipzone Automation India. We are committed to delivering innovative and reliable home automation solutions. Please review the following terms and conditions\n\nPrices: All prices are quoted in INR (Indian Rupees) and are inclusive of applicable taxes, unless otherwise specified\n\nValidity: This proposal remains valid for 30 days from the date of issue.\n\nInstallation: The proposal does not include costs for additional wiring, alterations, or modifications required at the time of installation.\n\nMobile Application: The Hipzone mobile app is free of charge and can be installed on multiple devices.",
+      termsAndConditions: DEFAULT_TERMS_AND_CONDITIONS,
       paymentTerms:
         "1. 25% – Upon order confirmation.\n2. 50% – Upon marking automation points and providing wiring drawings at the site.\n3. 75% – Upon completion of range mapping and site testing (including verification of electrical components, switch-boxes, lights, and automation provisions).\n4. 100% – Prior to dispatch of materials.",
       pricingTerms: "All prices are inclusive of applicable taxes.",

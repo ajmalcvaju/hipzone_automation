@@ -2,7 +2,8 @@
 
 import React from "react";
 import { Quotation, CompanySettings, QuotationTable } from "@/types";
-import { formatCurrency, computeQuotationTotals } from "@/lib/utils";
+import { formatCurrency, computeQuotationTotals, cleanDescription } from "@/lib/utils";
+import { DEFAULT_TERMS_AND_CONDITIONS } from "@/lib/constants";
 
 export interface HipzoneQuotationDocumentProps {
   quotation: Quotation;
@@ -80,10 +81,15 @@ export function HipzoneQuotationDocument({
     settings?.defaultCancellationPolicy ||
     "Any advance paid will be refunded if cancellation is made within 3 days of payment. After this period, the advance is non-refundable.";
 
+  const isOldDefaultTerms = (t?: string | null) =>
+    !t ||
+    t.includes("Thank you for your interest in Hipzone Automation India") ||
+    t.includes("Mobile Application: The Hipzone mobile app");
+
   const termsAndConditions =
-    quotation.termsAndConditions?.trim() ||
-    settings?.defaultTerms ||
-    "Thank you for your interest in Hipzone Automation India. We are committed to delivering innovative and reliable home automation solutions. Please review the following terms and conditions\n\nPrices: All prices are quoted in INR (Indian Rupees) and are inclusive of applicable taxes, unless otherwise specified\n\nValidity: This proposal remains valid for 30 days from the date of issue.\n\nInstallation: The proposal does not include costs for additional wiring, alterations, or modifications required at the time of installation.\n\nMobile Application: The Hipzone mobile app is free of charge and can be installed on multiple devices.";
+    (!isOldDefaultTerms(quotation.termsAndConditions) ? quotation.termsAndConditions?.trim() : "") ||
+    (!isOldDefaultTerms(settings?.defaultTerms) ? settings?.defaultTerms?.trim() : "") ||
+    DEFAULT_TERMS_AND_CONDITIONS;
 
   // Page styling - Exact A4: 210mm x 297mm
   const pageClass = `quotation-page relative w-[210mm] min-h-[297mm] h-[297mm] mx-auto bg-[#000000] text-white flex flex-col justify-between overflow-hidden box-border shadow-2xl print:shadow-none print:m-0 print:border-none print:w-[210mm] print:h-[297mm] ${
@@ -153,51 +159,73 @@ export function HipzoneQuotationDocument({
         <CyanBanner title={table.title || "CCTV"} />
 
         {table.type === "2-col" ? (
-          <div className="rounded-lg border border-[#0077b6]/60 overflow-hidden bg-black">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-[#050608] border-b border-[#0077b6]/60 text-white font-bold">
+          <div className="rounded-lg border border-[#0077b6] overflow-hidden bg-black shadow-sm">
+            <table className="w-full text-left text-xs border-collapse quotation-grid-table">
+              <thead className="bg-[#050608] text-white font-bold">
                 <tr>
-                  <th className="py-3 px-4 w-[75%] border-r border-[#0077b6]/40">Item</th>
-                  <th className="py-3 px-4 text-right w-[25%]">Price</th>
+                  <th
+                    className="py-3 px-4 w-[75%] border-r border-b border-[#0077b6] uppercase tracking-wider text-left"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
+                    Item
+                  </th>
+                  <th
+                    className="py-3 px-4 text-right w-[25%] border-b border-[#0077b6] uppercase tracking-wider"
+                    style={{ borderBottom: "1px solid #0077b6" }}
+                  >
+                    Price
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#0077b6]/30">
-                {table.items.map((it) => (
-                  <tr key={it.id} className="hover:bg-slate-900/40">
-                    <td className="py-3 px-4 text-white border-r border-[#0077b6]/30 font-medium">
-                      <div className="flex items-center gap-3">
+              <tbody className="bg-black">
+                {table.items.map((it, idx) => (
+                  <tr key={it.id || idx} className="hover:bg-slate-900/40">
+                    <td
+                      className="py-3 px-4 text-white border-r border-b border-[#0077b6] font-medium align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
+                      <div className="flex items-start gap-3">
                         {it.imageUrl ? (
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={it.imageUrl}
                             alt={it.name}
-                            className="w-11 h-11 rounded object-cover border border-[#0077b6]/50 bg-black shrink-0"
+                            className="w-11 h-11 rounded object-cover border border-[#0077b6] bg-black shrink-0 mt-0.5"
                           />
                         ) : null}
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <div className="font-bold text-xs text-white uppercase leading-snug">
                             {it.name}
                           </div>
                           {it.description && it.description !== it.name && (
-                            <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-2">
-                              {it.description}
+                            <div className="text-[11px] text-slate-300 mt-1 whitespace-pre-line leading-relaxed font-normal break-words">
+                              {cleanDescription(it.description)}
                             </div>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-white font-mono">
+                    <td
+                      className="py-3 px-4 text-right font-bold text-white font-mono border-b border-[#0077b6] align-top text-sm"
+                      style={{ borderBottom: "1px solid #0077b6", color: "#ffffff" }}
+                    >
                       {formatCurrency(it.price, currency)}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-[#050608] border-t-2 border-[#0077b6]/70">
-                  <td className="py-3 px-4 text-right font-bold text-white uppercase tracking-wider font-sans border-r border-[#0077b6]/40">
+                <tr className="bg-[#050608]">
+                  <td
+                    className="py-3 px-4 text-right font-bold text-white uppercase tracking-wider font-sans border-r border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6" }}
+                  >
                     Sub Total:
                   </td>
-                  <td className="py-3 px-4 text-right font-black text-white font-mono text-sm">
+                  <td
+                    className="py-3 px-4 text-right font-black text-white font-mono text-sm"
+                    style={{ color: "#ffffff" }}
+                  >
                     {formatCurrency(tableSubtotal, currency)}
                   </td>
                 </tr>
@@ -205,53 +233,106 @@ export function HipzoneQuotationDocument({
             </table>
           </div>
         ) : table.type === "7-col" ? (
-          <div className="rounded-lg border border-[#0077b6]/60 overflow-hidden bg-black">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-[#050608] border-b border-[#0077b6]/60 text-white font-bold">
+          <div className="rounded-lg border border-[#0077b6] overflow-hidden bg-black shadow-sm">
+            <table className="w-full text-left text-xs border-collapse quotation-grid-table">
+              <thead className="bg-[#050608] text-white font-bold">
                 <tr>
-                  <th className="py-2.5 px-2 text-center w-12 border-r border-[#0077b6]/40">S.No</th>
-                  <th className="py-2.5 px-3 w-[25%] border-r border-[#0077b6]/40">Item</th>
-                  <th className="py-2.5 px-3 flex-1 border-r border-[#0077b6]/40">Description</th>
-                  <th className="py-2.5 px-2 text-center w-12 border-r border-[#0077b6]/40">Qty</th>
-                  <th className="py-2.5 px-3 text-right w-20 border-r border-[#0077b6]/40">Unit Price</th>
-                  <th className="py-2.5 px-2 text-center w-14 border-r border-[#0077b6]/40">Tax %</th>
-                  <th className="py-2.5 px-3 text-right w-24">Billing Price</th>
+                  <th
+                    className="py-2.5 px-2 text-center w-10 border-r border-b border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
+                    S.No
+                  </th>
+                  <th
+                    className="py-2.5 px-3 w-[20%] border-r border-b border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
+                    Item
+                  </th>
+                  <th
+                    className="py-2.5 px-3 w-[35%] border-r border-b border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
+                    Description
+                  </th>
+                  <th
+                    className="py-2.5 px-2 text-center w-10 border-r border-b border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
+                    Qty
+                  </th>
+                  <th
+                    className="py-2.5 px-3 text-right w-20 border-r border-b border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
+                    Unit Price
+                  </th>
+                  <th
+                    className="py-2.5 px-2 text-center w-12 border-r border-b border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
+                    Tax %
+                  </th>
+                  <th
+                    className="py-2.5 px-3 text-right w-24 border-b border-[#0077b6]"
+                    style={{ borderBottom: "1px solid #0077b6" }}
+                  >
+                    Billing Price
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#0077b6]/30">
+              <tbody className="bg-black">
                 {table.items.map((it, idx) => (
                   <tr key={it.id || idx} className="hover:bg-slate-900/40">
-                    <td className="py-2.5 px-2 text-center text-slate-400 border-r border-[#0077b6]/30 font-mono">
+                    <td
+                      className="py-2.5 px-2 text-center text-slate-300 border-r border-b border-[#0077b6] font-mono align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
                       {idx + 1}
                     </td>
-                    <td className="py-2.5 px-3 font-semibold text-white border-r border-[#0077b6]/30">
-                      <div className="flex items-center gap-2.5">
+                    <td
+                      className="py-2.5 px-3 font-semibold text-white border-r border-b border-[#0077b6] align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
+                      <div className="flex items-start gap-2.5">
                         {it.imageUrl ? (
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={it.imageUrl}
                             alt={it.name}
-                            className="w-9 h-9 rounded object-cover border border-[#0077b6]/50 bg-black shrink-0"
+                            className="w-9 h-9 rounded object-cover border border-[#0077b6] bg-black shrink-0 mt-0.5"
                           />
                         ) : null}
                         <span className="leading-tight">{it.name}</span>
                       </div>
                     </td>
-                    <td className="py-2.5 px-3 text-[11px] text-slate-300 border-r border-[#0077b6]/30">
-                      {it.description || "—"}
+                    <td
+                      className="py-2.5 px-3 text-[11px] text-slate-300 border-r border-b border-[#0077b6] whitespace-pre-line leading-relaxed align-top break-words"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
+                      {cleanDescription(it.description) || "—"}
                     </td>
-                    <td className="py-2.5 px-2 text-center font-bold text-white border-r border-[#0077b6]/30">
+                    <td
+                      className="py-2.5 px-2 text-center font-bold text-white border-r border-b border-[#0077b6] align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
                       {it.qty}
                     </td>
-                    <td className="py-2.5 px-3 text-right text-slate-200 border-r border-[#0077b6]/30 font-mono">
+                    <td
+                      className="py-2.5 px-3 text-right text-slate-200 border-r border-b border-[#0077b6] font-mono align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
                       {it.price}
                     </td>
-                    <td className="py-2.5 px-2 text-center text-slate-300 border-r border-[#0077b6]/30 font-mono">
+                    <td
+                      className="py-2.5 px-2 text-center text-slate-300 border-r border-b border-[#0077b6] font-mono align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
                       {it.taxPercent ?? 5}%
                     </td>
                     <td
-                      className="py-2.5 px-3 text-right font-bold text-white font-mono"
-                      style={{ color: "#ffffff" }}
+                      className="py-2.5 px-3 text-right font-bold text-white font-mono border-b border-[#0077b6] align-top"
+                      style={{ borderBottom: "1px solid #0077b6", color: "#ffffff" }}
                     >
                       {formatCurrency(it.total || it.qty * it.price, currency)}
                     </td>
@@ -259,8 +340,12 @@ export function HipzoneQuotationDocument({
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-[#050608] border-t-2 border-[#0077b6]/70">
-                  <td colSpan={6} className="py-2.5 px-4 text-right font-bold text-white uppercase tracking-wider font-sans border-r border-[#0077b6]/40">
+                <tr className="bg-[#050608]">
+                  <td
+                    colSpan={6}
+                    className="py-2.5 px-4 text-right font-bold text-white uppercase tracking-wider font-sans border-r border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6" }}
+                  >
                     Sub Total:
                   </td>
                   <td
@@ -275,64 +360,92 @@ export function HipzoneQuotationDocument({
           </div>
         ) : (
           /* Standard 4-Column Table matching reference Screenshot 4 */
-          <div className="rounded-lg border border-[#0077b6]/70 overflow-hidden bg-black">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-[#050608] border-b border-[#0077b6]/70 text-white font-bold">
+          <div className="rounded-lg border border-[#0077b6] overflow-hidden bg-black shadow-sm">
+            <table className="w-full text-left text-xs border-collapse quotation-grid-table">
+              <thead className="bg-[#050608] text-white font-bold">
                 <tr>
-                  <th className="py-3 px-4 w-[50%] border-r border-[#0077b6]/50 text-center uppercase tracking-wider">
+                  <th
+                    className="py-3 px-4 w-[50%] border-r border-b border-[#0077b6] text-center uppercase tracking-wider"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
                     Item
                   </th>
-                  <th className="py-3 px-3 w-[15%] border-r border-[#0077b6]/50 text-center uppercase tracking-wider">
+                  <th
+                    className="py-3 px-3 w-[15%] border-r border-b border-[#0077b6] text-center uppercase tracking-wider"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
                     Qty
                   </th>
-                  <th className="py-3 px-3 w-[17%] border-r border-[#0077b6]/50 text-center uppercase tracking-wider">
+                  <th
+                    className="py-3 px-3 w-[17%] border-r border-b border-[#0077b6] text-center uppercase tracking-wider"
+                    style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                  >
                     Price
                   </th>
-                  <th className="py-3 px-4 w-[18%] text-center uppercase tracking-wider">
+                  <th
+                    className="py-3 px-4 w-[18%] border-b border-[#0077b6] text-center uppercase tracking-wider"
+                    style={{ borderBottom: "1px solid #0077b6" }}
+                  >
                     Total
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#0077b6]/40">
+              <tbody className="bg-black">
                 {table.items.map((it, idx) => (
                   <tr key={it.id || idx} className="hover:bg-slate-900/30">
-                    <td className="py-3 px-4 text-white border-r border-[#0077b6]/40">
-                      <div className="flex items-center gap-3">
+                    <td
+                      className="py-3 px-4 text-white border-r border-b border-[#0077b6] align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
+                      <div className="flex items-start gap-3">
                         {it.imageUrl ? (
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={it.imageUrl}
                             alt={it.name}
-                            className="w-11 h-11 rounded object-cover border border-[#0077b6]/50 bg-black shrink-0"
+                            className="w-11 h-11 rounded object-cover border border-[#0077b6] bg-black shrink-0 mt-0.5"
                           />
                         ) : null}
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <div className="font-bold text-xs text-white uppercase leading-snug">
                             {it.name}
                           </div>
                           {it.description && it.description !== it.name && (
-                            <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-2">
-                              {it.description}
+                            <div className="text-[11px] text-slate-300 mt-1 whitespace-pre-line leading-relaxed font-normal break-words">
+                              {cleanDescription(it.description)}
                             </div>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-center font-bold text-white border-r border-[#0077b6]/40 font-mono text-sm">
+                    <td
+                      className="py-3 px-3 text-center font-bold text-white border-r border-b border-[#0077b6] font-mono text-sm align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
                       {it.qty}
                     </td>
-                    <td className="py-3 px-3 text-center text-white border-r border-[#0077b6]/40 font-mono text-sm">
+                    <td
+                      className="py-3 px-3 text-center text-white border-r border-b border-[#0077b6] font-mono text-sm align-top"
+                      style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                    >
                       {it.price}
                     </td>
-                    <td className="py-3 px-4 text-center font-bold text-white font-mono text-sm">
+                    <td
+                      className="py-3 px-4 text-center font-bold text-white font-mono text-sm border-b border-[#0077b6] align-top"
+                      style={{ borderBottom: "1px solid #0077b6" }}
+                    >
                       {(it.total || it.qty * it.price).toFixed(2)}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-[#050608] border-t-2 border-[#0077b6]/70">
-                  <td colSpan={3} className="py-3 px-4 text-right font-bold text-white uppercase tracking-wider font-sans border-r border-[#0077b6]/50">
+                <tr className="bg-[#050608]">
+                  <td
+                    colSpan={3}
+                    className="py-3 px-4 text-right font-bold text-white uppercase tracking-wider font-sans border-r border-[#0077b6]"
+                    style={{ borderRight: "1px solid #0077b6" }}
+                  >
                     Sub Total:
                   </td>
                   <td className="py-3 px-4 text-center font-black text-white font-mono text-sm">
@@ -521,32 +634,62 @@ export function HipzoneQuotationDocument({
             {/* Section 1: Tax Summary Table */}
             <div>
               <CyanBanner title="Tax Summary" />
-              <div className="rounded-lg border border-[#0077b6]/70 overflow-hidden bg-black">
-                <table className="w-full text-center text-xs border-collapse">
-                  <thead className="bg-[#050608] border-b border-[#0077b6]/70 text-white font-bold">
+              <div className="rounded-lg border border-[#0077b6] overflow-hidden bg-black shadow-sm">
+                <table className="w-full text-center text-xs border-collapse quotation-grid-table">
+                  <thead className="bg-[#050608] text-white font-bold">
                     <tr>
-                      <th className="py-2.5 px-3 border-r border-[#0077b6]/50">Tax Details</th>
-                      <th className="py-2.5 px-3 border-r border-[#0077b6]/50">Taxable Amount (INR)</th>
-                      <th className="py-2.5 px-3">Tax Amount (GST)</th>
+                      <th
+                        className="py-2.5 px-3 border-r border-b border-[#0077b6]"
+                        style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                      >
+                        Tax Details
+                      </th>
+                      <th
+                        className="py-2.5 px-3 border-r border-b border-[#0077b6]"
+                        style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                      >
+                        Taxable Amount (INR)
+                      </th>
+                      <th
+                        className="py-2.5 px-3 border-b border-[#0077b6]"
+                        style={{ borderBottom: "1px solid #0077b6" }}
+                      >
+                        Tax Amount (GST)
+                      </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#0077b6]/40 font-mono text-sm">
+                  <tbody className="bg-black font-mono text-sm">
                     <tr>
-                      <td className="py-3 px-3 border-r border-[#0077b6]/40 text-white font-sans text-xs">
+                      <td
+                        className="py-3 px-3 border-r border-b border-[#0077b6] text-white font-sans text-xs"
+                        style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                      >
                         Standard Rate ({taxRate}%)
                       </td>
-                      <td className="py-3 px-3 border-r border-[#0077b6]/40 text-white">
+                      <td
+                        className="py-3 px-3 border-r border-b border-[#0077b6] text-white"
+                        style={{ borderRight: "1px solid #0077b6", borderBottom: "1px solid #0077b6" }}
+                      >
                         {taxableAmount.toFixed(2)}
                       </td>
-                      <td className="py-3 px-3 text-white">
+                      <td
+                        className="py-3 px-3 border-b border-[#0077b6] text-white"
+                        style={{ borderBottom: "1px solid #0077b6" }}
+                      >
                         {taxAmount.toFixed(2)}
                       </td>
                     </tr>
                     <tr className="bg-slate-950 font-bold">
-                      <td className="py-3 px-3 border-r border-[#0077b6]/40 text-white font-sans text-xs">
+                      <td
+                        className="py-3 px-3 border-r border-[#0077b6] text-white font-sans text-xs"
+                        style={{ borderRight: "1px solid #0077b6" }}
+                      >
                         Subtotal
                       </td>
-                      <td className="py-3 px-3 border-r border-[#0077b6]/40 text-white">
+                      <td
+                        className="py-3 px-3 border-r border-[#0077b6] text-white"
+                        style={{ borderRight: "1px solid #0077b6" }}
+                      >
                         INR {taxableAmount.toFixed(2)}
                       </td>
                       <td className="py-3 px-3 text-white">
@@ -610,8 +753,8 @@ export function HipzoneQuotationDocument({
             </div>
 
             <div>
-              <h2 className="text-base font-bold text-white mb-3">Terms and Conditions</h2>
-              <div className="text-xs leading-relaxed text-[#cbd5e1] whitespace-pre-line font-sans space-y-2">
+              <h2 className="text-base font-bold text-white mb-2">Terms and Conditions</h2>
+              <div className="text-[11px] leading-relaxed text-[#cbd5e1] whitespace-pre-line font-sans">
                 {termsAndConditions}
               </div>
             </div>

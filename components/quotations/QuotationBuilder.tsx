@@ -17,7 +17,8 @@ import { saveQuotation, generateNextQuotationNumber } from "@/services/quotation
 import { compressImageTo25KB } from "@/services/storage";
 import { HipzoneQuotationDocument } from "@/components/quotation-document/HipzoneQuotationDocument";
 import { downloadQuotationPDF, printQuotationDocument } from "@/lib/pdf/export";
-import { generateId, computeQuotationTotals } from "@/lib/utils";
+import { generateId, computeQuotationTotals, cleanDescription } from "@/lib/utils";
+import { DEFAULT_TERMS_AND_CONDITIONS } from "@/lib/constants";
 import { ProductSearchSelect } from "./ProductSearchSelect";
 import { toast } from "sonner";
 import {
@@ -105,7 +106,11 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
             phone: "+91 7012566008",
             email: "support@hipzoneautomat",
           },
-          termsAndConditions: settings.defaultTerms,
+          termsAndConditions:
+            settings.defaultTerms &&
+            !settings.defaultTerms.includes("Thank you for your interest in Hipzone Automation India")
+              ? settings.defaultTerms
+              : DEFAULT_TERMS_AND_CONDITIONS,
           paymentTerms: settings.defaultPaymentTerms,
           pricingTerms: settings.defaultCancellationPolicy,
           cancellationPolicy: settings.defaultCancellationPolicy,
@@ -118,6 +123,16 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
         };
 
         setQuotation(newQuote);
+      } else {
+        if (
+          !initialQuotation.termsAndConditions ||
+          initialQuotation.termsAndConditions.includes("Thank you for your interest in Hipzone Automation India")
+        ) {
+          setQuotation((prev) => (prev ? {
+            ...prev,
+            termsAndConditions: DEFAULT_TERMS_AND_CONDITIONS,
+          } : prev));
+        }
       }
     }
 
@@ -456,7 +471,7 @@ export function QuotationBuilder({ initialQuotation }: QuotationBuilderProps) {
                       ...it,
                       productId: selected.id,
                       name: selected.name,
-                      description: selected.description || selected.name,
+                      description: cleanDescription(selected.description) || selected.name,
                       price: price,
                       imageUrl: selected.imageUrl || "",
                       total: t.type === "7-col" ? itemSubtotal + itemTax : itemSubtotal,

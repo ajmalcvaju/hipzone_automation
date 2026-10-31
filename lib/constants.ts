@@ -15,6 +15,40 @@ export const DEFAULT_BANK_DETAILS = {
   upiId: "wiznsystemsprivatelimited@icici",
 };
 
+export const DEFAULT_TERMS_AND_CONDITIONS = `A. Warranty & Service Benefits
+
+    Free On-Site Service: One year of complimentary on-site service from the date of installation. Replacement products and spare parts are chargeable.
+
+    Manufacturer Warranty: Eligible products carry a 2-year manufacturer warranty. For motorized installations, the warranty covers the motor only, unless otherwise specified.
+
+    Annual Maintenance Contract (AMC): After the first year, an optional AMC is available at 8% of the original project cost per year, subject to agreed service terms.
+
+B. Commercial Terms & Conditions
+
+    Product Pricing: Prices are subject to change based on manufacturer and supplier revisions. Quotations are valid for the period specified in the quotation.
+
+    Site Inspection: Up to 3 to 4 site visits per project are included. Additional visits may incur extra charges.
+
+    Scope of Work: Any changes or additions beyond the agreed project scope may involve additional costs.
+
+    Payment Terms: Payments shall be made as mutually agreed at the time of order confirmation.
+
+    Delivery & Execution: Project timelines depend on product availability, site readiness, and coordination with other contractors.
+
+    Order Cancellation: Cancellation or modification of confirmed orders requires approval from Hipzone Automation India. Any applicable costs already incurred may be chargeable.
+
+C. Warranty Exclusions
+
+    Accessories: Accessories are not covered under warranty unless specifically mentioned in the quotation.
+
+    Exclusions: Warranty does not cover physical damage, lightning or power surge damage, or unauthorized third-party interference, repairs, or modifications.
+
+    Warranty Claims: All manufacturer warranty claims are subject to the respective manufacturer’s terms, inspection, and approval.
+
+HIPZONE AUTOMATION INDIA
+
+Reliable Technology. Trusted Service`;
+
 export const DEFAULT_SETTINGS: CompanySettings = {
   companyName: "Hipzone Automation",
   tagline: "Home Design | Security | Innovation",
@@ -50,8 +84,7 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   },
   defaultProjectDescription:
     "HIPZONE AUTOMATION transforms homes and businesses into smarter, safer, and more intelligent spaces. With over 8 years of expertise in India and an expanding presence in Dubai, we deliver AI-integrated automation and security solutions powered by trusted global brands.\n\nOur intelligent systems go beyond standard automation. They learn your lifestyle, anticipate your needs, and optimize comfort, security, and energy efficiency automatically. We combine technical expertise with personalized service to ensure every project is reliable, future-ready, and supported by strong customer care.",
-  defaultTerms:
-    "Thank you for your interest in Hipzone Automation India. We are committed to delivering innovative and reliable home automation solutions. Please review the following terms and conditions\n\nPrices: All prices are quoted in INR (Indian Rupees) and are inclusive of applicable taxes, unless otherwise specified\n\nValidity: This proposal remains valid for 30 days from the date of issue.\n\nInstallation: The proposal does not include costs for additional wiring, alterations, or modifications required at the time of installation.\n\nMobile Application: The Hipzone mobile app is free of charge and can be installed on multiple devices.",
+  defaultTerms: DEFAULT_TERMS_AND_CONDITIONS,
   defaultPaymentTerms:
     "1. 25% – Upon order confirmation.\n2. 50% – Upon marking automation points and providing wiring drawings at the site.\n3. 75% – Upon completion of range mapping and site testing (including verification of electrical components, switch-boxes, lights, and automation provisions).\n4. 100% – Prior to dispatch of materials.",
   defaultCancellationPolicy:

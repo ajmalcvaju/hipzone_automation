@@ -105,6 +105,9 @@ export async function downloadQuotationPDF(
     let res = val;
     if (res.includes("in oklab")) res = res.replaceAll("in oklab", "");
     if (res.includes("in oklch")) res = res.replaceAll("in oklch", "");
+    if (res.includes("color-mix(")) {
+      res = res.replace(/color-mix\([^)]+\)/g, "#0077b6");
+    }
     if (
       res.includes("lab(") ||
       res.includes("oklch(") ||
@@ -257,6 +260,29 @@ export async function downloadQuotationPDF(
             }
             .print\\:hidden, .no-export, [data-no-export="true"], button {
               display: none !important;
+            }
+            table {
+              border-collapse: collapse !important;
+            }
+            .quotation-grid-table {
+              border: 1px solid #0077b6 !important;
+            }
+            .quotation-grid-table th {
+              border-bottom: 1px solid #0077b6 !important;
+              border-right: 1px solid #0077b6 !important;
+            }
+            .quotation-grid-table th:last-child {
+              border-right: none !important;
+            }
+            .quotation-grid-table td {
+              border-bottom: 1px solid #0077b6 !important;
+              border-right: 1px solid #0077b6 !important;
+            }
+            .quotation-grid-table td:last-child {
+              border-right: none !important;
+            }
+            .quotation-grid-table tfoot td {
+              border-top: 2px solid #0077b6 !important;
             }
           `;
           clonedDoc.head.appendChild(overrideStyle);

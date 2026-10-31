@@ -149,3 +149,33 @@ export function computeQuotationTotals(
     subtotal: taxable,
   };
 }
+
+/**
+ * Normalizes multi-line product descriptions:
+ * Merges artificial mid-sentence line breaks (often caused by copy-pasting from narrow columns)
+ * so that text flows naturally across the full width of the table cell, while preserving
+ * true paragraph breaks (\n\n) and numbered/bulleted lists (e.g. "1. ", "• ", "- ").
+ */
+export function cleanDescription(desc?: string | null): string {
+  if (!desc || typeof desc !== "string") return "";
+  const normalized = desc.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+  if (!normalized) return "";
+
+  return normalized
+    .split(/\n\s*\n/) // split into separate paragraphs on empty lines
+    .map((para) => {
+      const lines = para.split("\n").map((l) => l.trim()).filter(Boolean);
+      return lines.reduce((acc, line, idx) => {
+        if (idx === 0) return line;
+        // Keep separate line if it looks like a list item / bullet / numbered section
+        // e.g. '1.', '1.1', '6.1', 'a)', '-', '*', '•'
+        const isListItem = /^(\d+(\.\d+)*[\.\)]?|[-*•])\s+/.test(line);
+        if (isListItem) {
+          return `${acc}\n${line}`;
+        }
+        // Otherwise, it was an artificial mid-sentence line break -> join with space!
+        return `${acc} ${line}`;
+      }, "");
+    })
+    .join("\n\n");
+}
